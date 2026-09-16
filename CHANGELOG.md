@@ -1,3 +1,15 @@
+# Fork release history
+
+## 0.1.0 — Markdown Comment Outline
+
+- Replace repeated comment markers and dash terminators with Markdown headings in seven comment formats.
+- Support six levels, configurable depth filtering, and parentless headings as roots.
+- Restore immediate cursor-to-tree synchronization after refresh.
+- Use independent extension, command, view, setting and theme-color identifiers.
+- Upgrade development dependencies and prepare CI, VSIX packaging and Marketplace instructions.
+
+## Original Code Organizer history
+
 # Changelog
 
 All notable changes to the "Code Organizer" extension will be documented in this file.

@@ -1,0 +1,8 @@
+/* # Theme */
+:root { --accent: #5874ff; }
+
+/* ## Buttons */
+button { color: var(--accent); }
+
+/* ###### Hover */
+button:hover { opacity: 0.8; }

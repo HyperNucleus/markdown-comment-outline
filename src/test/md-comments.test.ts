@@ -5,7 +5,7 @@ suite('Markdown Header Section Detection', () => {
   test('should detect realistic markdown headers as sections', () => {
     const text = `
 # 1. Project Documentation 
-This is a test markdown file for the Code Organizer extension.
+This is a test markdown file for the Markdown Comment Outline extension.
 code
 code
 code

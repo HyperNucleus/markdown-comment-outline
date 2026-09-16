@@ -1,4 +1,4 @@
-# 1. Configuration ----
+# # 1. Configuration
 DATABASE_URL = "localhost"
 API_KEY = "secret"
 DEBUG_MODE = True
@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-## 1.1 Database ----
+# ## 1.1 Database
 def connect_db():
     """Establish database connection"""
     try:
@@ -22,7 +22,7 @@ def connect_db():
         logger.error("Database connection failed: %s", str(e))
         return None
 
-### 1.1.1 Connection Pool ----
+# ### 1.1.1 Connection Pool
 def create_connection_pool():
     """Create a pool of database connections"""
     # Simplified connection pool simulation
@@ -49,7 +49,7 @@ def return_connection_to_pool(pool, connection):
     else:
         connection.close()
 
-### 1.1.2 Query Builder ----
+# ### 1.1.2 Query Builder
 def build_query(table, conditions=None):
     """Build SQL query dynamically"""
     base_query = f"SELECT * FROM {table}"
@@ -69,7 +69,7 @@ def execute_query(connection, query, params=None):
     finally:
         cursor.close()
 
-## 1.2 API ----
+# ## 1.2 API
 def call_api():
     """Make API calls to external services"""
     import requests
@@ -87,7 +87,7 @@ def call_api():
         logger.error("API call failed: %s", str(e))
         return None
 
-### 1.2.1 Authentication ----
+# ### 1.2.1 Authentication
 def authenticate_user(token):
     """Validate user authentication token"""
     # Simplified token validation (replace with real JWT library)
@@ -112,7 +112,7 @@ def generate_token(user_id):
     token = f"valid_token_{user_id}_{datetime.now().timestamp()}"
     return token
 
-### 1.2.2 Request Handler ----
+# ### 1.2.2 Request Handler
 def handle_request(request):
     """Process incoming HTTP requests"""
     method = request.get('method', 'GET')
@@ -158,7 +158,7 @@ def handle_data_request(method, body):
     else:
         return {'status': 'error', 'message': 'Method not allowed'}
 
-# 2. Utils ----
+# # 2. Utils
 def get_all_users():
     """Retrieve all users from database"""
     connection = connect_db()

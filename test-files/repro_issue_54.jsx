@@ -1,8 +1,8 @@
 ﻿// Part A ----
 const a = 1;
 
-{/* //// Sub of A ---- */}
+{/* ## Sub of A */}
 const b = 2;
 
-// Part B ----
+// # Part B
 const c = 3;

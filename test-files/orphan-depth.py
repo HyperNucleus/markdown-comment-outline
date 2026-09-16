@@ -8,8 +8,8 @@
 # 'no parent'"), not a regression from #47 -- but the symptom is identical to
 # that bug, so this fixture keeps the decision visible.
 
-### Orphan ----
+# ### Orphan
 VALUE = 1
 
-#### Child ----
+# #### Child
 NESTED = 2

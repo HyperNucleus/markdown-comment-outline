@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { SectionMatch } from './findSections';
 
-// 1. Range Helpers ----
+// # 1. Range Helpers
 /**
  * The full range a section's comment line occupies in `document`.
  *

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 
-{/* // 1. Component Setup ---- */}
+{/* # 1. Component Setup */}
 function TodoApp() {
-  {/* // 1.1 State Management ---- */}
+  {/* # 1.1 State Management */}
   const [todos, setTodos] = useState([]);
   const [filter, setFilter] = useState('all');
   const [loading, setLoading] = useState(false);
 
-  {/* //// 1.1.1 Todo Operations ---- */}
+  {/* ## 1.1.1 Todo Operations */}
   const addTodo = (text) => {
     setTodos([...todos, { 
       id: Date.now(), 
@@ -23,7 +23,7 @@ function TodoApp() {
     ));
   };
 
-  {/* //// 1.1.2 Filter Logic ---- */}
+  {/* ## 1.1.2 Filter Logic */}
   const filteredTodos = todos.filter(todo => {
     switch (filter) {
       case 'active': return !todo.done;
@@ -32,7 +32,7 @@ function TodoApp() {
     }
   });
 
-  {/* // 1.2 Effects ---- */}
+  {/* # 1.2 Effects */}
   useEffect(() => {
     // Load todos from localStorage
     const saved = localStorage.getItem('todos');
@@ -46,7 +46,7 @@ function TodoApp() {
     localStorage.setItem('todos', JSON.stringify(todos));
   }, [todos]);
 
-  {/* // 2. Event Handlers ---- */}
+  {/* # 2. Event Handlers */}
   const handleSubmit = (e) => {
     e.preventDefault();
     const input = e.target.querySelector('input');
@@ -60,8 +60,8 @@ function TodoApp() {
     setTodos(todos.filter(todo => !todo.done));
   };
 
-  {/* // 3. Render Methods ---- */}
-  {/* //// 3.1 Todo Item Renderer ---- */}
+  {/* # 3. Render Methods */}
+  {/* ## 3.1 Todo Item Renderer */}
   const renderTodo = (todo) => (
     <li key={todo.id} className={`todo-item ${todo.done ? 'completed' : ''}`}>
       <input
@@ -76,7 +76,7 @@ function TodoApp() {
     </li>
   );
 
-  {/* //// 3.2 Filter Buttons ---- */}
+  {/* ## 3.2 Filter Buttons */}
   const renderFilters = () => (
     <div className="filters">
       {['all', 'active', 'completed'].map(filterType => (
@@ -91,10 +91,10 @@ function TodoApp() {
     </div>
   );
 
-  {/* // 4. Main Render ---- */}
+  {/* # 4. Main Render */}
   return (
     <div className="todo-app">
-      {/* // 4.1 Header Section ---- */}
+      {/* # 4.1 Header Section */}
       <header className="app-header">
         <h1>Todo List</h1>
         <form onSubmit={handleSubmit} className="todo-form">
@@ -107,18 +107,18 @@ function TodoApp() {
         </form>
       </header>
 
-      {/* // 4.2 Main Content ---- */}
+      {/* # 4.2 Main Content */}
       <main className="app-main">
         {loading ? (
           <div className="loading">Loading...</div>
         ) : (
           <>
-            {/* //// 4.2.1 Todo List ---- */}
+            {/* ## 4.2.1 Todo List */}
             <ul className="todo-list">
               {filteredTodos.map(renderTodo)}
             </ul>
 
-            {/* //// 4.2.2 Stats & Controls ---- */}
+            {/* ## 4.2.2 Stats & Controls */}
             <div className="todo-stats">
               <span>{todos.filter(t => !t.done).length} items left</span>
               {renderFilters()}
@@ -130,7 +130,7 @@ function TodoApp() {
         )}
       </main>
 
-      {/* // 4.3 Footer ---- */}
+      {/* # 4.3 Footer */}
       <footer className="app-footer">
         <p>Double-click to edit a todo</p>
         <p>Created with React</p>
@@ -139,5 +139,5 @@ function TodoApp() {
   );
 }
 
-{/* // 5. Export ---- */}
+{/* # 5. Export */}
 export default TodoApp;

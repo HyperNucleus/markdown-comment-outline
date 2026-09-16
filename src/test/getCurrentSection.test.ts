@@ -9,11 +9,11 @@ suite('Current Section Tests (getCurrentSection)', () => {
 	// that runs to the end of the text.
 	const text = [
 		'preamble line',
-		'# Root ----',
+		'# # Root',
 		'root body',
-		'## Nested ----',
+		'# ## Nested',
 		'nested body',
-		'# Second ----',
+		'# # Second',
 		'tail line',
 		''
 	].join('\n');
@@ -47,7 +47,7 @@ suite('Current Section Tests (getCurrentSection)', () => {
 	});
 
 	test('Should treat a section header line as inside its own section', () => {
-		// The start offset is inclusive: the cursor parked on `## Nested ----`
+		// The start offset is inclusive: the cursor parked on `# ## Nested`
 		// itself resolves to Nested.
 		const nested = sections.find(s => s.name === 'Nested')!;
 		assert.strictEqual(getCurrentSection(nested.index, sections), nested);
@@ -98,7 +98,7 @@ suite('Current Section Tests (getCurrentSection)', () => {
 	test('Should return the only section at EOF when it starts at offset 0', () => {
 		// The degenerate one-section document: the whole file is that section,
 		// including its final position.
-		const single = '# Only ----\nbody\n';
+		const single = '# # Only\nbody\n';
 		assert.strictEqual(
 			getCurrentSection(single.length, findSections(single, 'python'))?.name,
 			'Only'

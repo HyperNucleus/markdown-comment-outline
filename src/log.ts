@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 
-// 1. Output Channel ----
+// # 1. Output Channel
 /**
  * The extension's single diagnostic sink: an Output Channel named
- * "Code Organizer", visible to users in the wild under View → Output.
+ * "Markdown Comment Outline", visible to users in the wild under View → Output.
  *
  * Deliberately not `console.log`, which only reaches the Extension Host
  * devtools console and is therefore useless for diagnosing a report from a
@@ -16,7 +16,7 @@ let outputChannel: vscode.OutputChannel | undefined;
 
 export function initializeLog(): vscode.OutputChannel {
   if (!outputChannel) {
-    outputChannel = vscode.window.createOutputChannel('Code Organizer');
+    outputChannel = vscode.window.createOutputChannel('Markdown Comment Outline');
   }
   return outputChannel;
 }

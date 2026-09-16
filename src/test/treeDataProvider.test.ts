@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { CodeOrganizerTreeDataProvider, SectionTreeItem } from '../treeDataProvider';
+import { MarkdownCommentOutlineTreeDataProvider, SectionTreeItem } from '../treeDataProvider';
 import { SectionIndex } from '../sectionIndex';
 
 // The invariant this suite exists for: `TreeView.reveal()` matches elements by
@@ -17,11 +17,11 @@ import { SectionIndex } from '../sectionIndex';
 suite('Tree Data Provider Tests (reveal identity)', () => {
 
 	let index: SectionIndex;
-	let provider: CodeOrganizerTreeDataProvider;
+	let provider: MarkdownCommentOutlineTreeDataProvider;
 
 	setup(() => {
 		index = new SectionIndex();
-		provider = new CodeOrganizerTreeDataProvider(index);
+		provider = new MarkdownCommentOutlineTreeDataProvider(index);
 	});
 
 	teardown(() => {
@@ -35,7 +35,7 @@ suite('Tree Data Provider Tests (reveal identity)', () => {
 	}
 
 	test('Should return the same instance getChildren handed out', async () => {
-		await refreshedWith('# Root ----\n## Child ----\n');
+		await refreshedWith('# # Root\n# ## Child\n');
 
 		const roots = provider.getChildren();
 		assert.strictEqual(roots.length, 1);
@@ -43,7 +43,7 @@ suite('Tree Data Provider Tests (reveal identity)', () => {
 	});
 
 	test('Should hand out stable instances across repeated getChildren calls', async () => {
-		await refreshedWith('# Root ----\n## Child ----\n');
+		await refreshedWith('# # Root\n# ## Child\n');
 
 		const first = provider.getChildren();
 		const second = provider.getChildren();
@@ -56,7 +56,7 @@ suite('Tree Data Provider Tests (reveal identity)', () => {
 	test('Should return cached instances up the parent chain', async () => {
 		// reveal() walks parents, so every link must be a cached instance too —
 		// a freshly built parent breaks the reveal just as a freshly built child does.
-		await refreshedWith('# Root ----\n## Child ----\n### Grandchild ----\n');
+		await refreshedWith('# # Root\n# ## Child\n# ### Grandchild\n');
 
 		const root = provider.getChildren()[0];
 		const child = provider.getChildren(root)[0];
@@ -70,7 +70,7 @@ suite('Tree Data Provider Tests (reveal identity)', () => {
 	test('Should key the cache by uniqueId, not name', async () => {
 		// Duplicate section names are legal. Two sections sharing a name must not
 		// collapse onto one cached item, or reveal would jump to the wrong one.
-		const document = await refreshedWith('# Setup ----\n# Setup ----\n');
+		const document = await refreshedWith('# # Setup\n# # Setup\n');
 		const sections = index.getSections(document);
 
 		const roots = provider.getChildren();
@@ -80,31 +80,26 @@ suite('Tree Data Provider Tests (reveal identity)', () => {
 		assert.strictEqual(provider.findTreeItemBySection(sections[1]), roots[1]);
 	});
 
-	test('Should hold no cached items between refresh and the first getChildren', async () => {
-		// Pins a pre-existing bug rather than endorsing it. `refresh()` clears the
-		// cache and fires the change event, but only VS Code calling `getChildren()`
-		// refills it. cursorSync does not await between the two, so this is not a
-		// race it might lose — every sync pass that refreshes finds nothing to
-		// reveal, and since an edit forces a refresh, the sidebar stops following
-		// the cursor for as long as the user is typing. Out of scope here (fixing
-		// it is a visible behavior change); tracked as #50, and cursorSync logs
-		// the miss instead of returning in silence.
-		const document = await refreshedWith('# Root ----\n');
-		const section = index.getSections(document)[0];
 
-		assert.strictEqual(provider.findTreeItemBySection(section), undefined);
-
-		// One getChildren() call is all it takes to populate it.
-		const roots = provider.getChildren();
-		assert.strictEqual(provider.findTreeItemBySection(section), roots[0]);
-	});
+  test('Should materialize a stable item before VS Code requests children', async () => {
+    const document = await refreshedWith('# ### Root\n# ###### Deep');
+    const sections = index.getSections(document);
+    const child = provider.findTreeItemBySection(sections[1]);
+    assert.ok(child);
+    const roots = provider.getChildren();
+    assert.strictEqual(roots[0].label, 'Root');
+    assert.strictEqual(provider.getParent(child), roots[0]);
+    assert.strictEqual(provider.getChildren(roots[0])[0], child);
+    assert.strictEqual(provider.findTreeItemBySection(sections[1]), child);
+    assert.strictEqual(provider.findTreeItemBySection({ ...sections[1], uniqueId: 'stale' }), undefined);
+  });
 
 	test('Should return no children before any refresh', async () => {
 		assert.deepStrictEqual(provider.getChildren(), []);
 	});
 });
 
-// `codeOrganizer.showIcons` (#57). Two separate things are asserted here and the
+// `markdownCommentOutline.showIcons` (#57). Two separate things are asserted here and the
 // split is deliberate: the item-level tests pin *how* an icon is suppressed
 // (`iconPath` left undefined — there is no blank ThemeIcon to assign), while the
 // provider-level test pins that the setting is actually plumbed through. Neither
@@ -113,24 +108,24 @@ suite('Tree Data Provider Tests (reveal identity)', () => {
 suite('Tree Data Provider Tests (icon visibility)', () => {
 
 	let index: SectionIndex;
-	let provider: CodeOrganizerTreeDataProvider;
+	let provider: MarkdownCommentOutlineTreeDataProvider;
 
 	setup(() => {
 		index = new SectionIndex();
-		provider = new CodeOrganizerTreeDataProvider(index);
+		provider = new MarkdownCommentOutlineTreeDataProvider(index);
 	});
 
 	teardown(async () => {
 		index.dispose();
 		// Global config outlives the suite — put it back or every later suite runs
 		// against whatever this one left behind.
-		await vscode.workspace.getConfiguration('codeOrganizer')
+		await vscode.workspace.getConfiguration('markdownCommentOutline')
 			.update('showIcons', undefined, vscode.ConfigurationTarget.Global);
 	});
 
 	async function sectionFixture() {
 		const document = await vscode.workspace.openTextDocument({
-			content: '# Root ----\n## Child ----\n### Grandchild ----\n#### Leaf ----\n',
+			content: '# # Root\n# ## Child\n# ### Grandchild\n# #### Leaf\n',
 			language: 'python'
 		});
 		return { document, sections: index.getSections(document), children: index.getChildrenMap(document) };
@@ -166,17 +161,17 @@ suite('Tree Data Provider Tests (icon visibility)', () => {
 		assert.ok(item.iconPath instanceof vscode.ThemeIcon);
 	});
 
-	test('Should honour codeOrganizer.showIcons on refresh', async () => {
+	test('Should honour markdownCommentOutline.showIcons on refresh', async () => {
 		// The setting is re-read by refresh() rather than cached at construction,
 		// which is what lets it apply without a window reload.
 		const document = await vscode.workspace.openTextDocument({
-			content: '# Root ----\n## Child ----\n', language: 'python'
+			content: '# # Root\n# ## Child\n', language: 'python'
 		});
 
 		provider.refresh(document);
 		assert.ok(provider.getChildren()[0].iconPath instanceof vscode.ThemeIcon);
 
-		await vscode.workspace.getConfiguration('codeOrganizer')
+		await vscode.workspace.getConfiguration('markdownCommentOutline')
 			.update('showIcons', false, vscode.ConfigurationTarget.Global);
 		provider.refresh(document);
 
@@ -192,13 +187,13 @@ suite('Tree Data Provider Tests (icon visibility)', () => {
 	// the document the tree already holds.
 	test('Should apply a showIcons change through refreshCurrent, with no document passed', async () => {
 		const document = await vscode.workspace.openTextDocument({
-			content: '# Root ----\n## Child ----\n', language: 'python'
+			content: '# # Root\n# ## Child\n', language: 'python'
 		});
 
 		provider.refresh(document);
 		assert.ok(provider.getChildren()[0].iconPath instanceof vscode.ThemeIcon);
 
-		await vscode.workspace.getConfiguration('codeOrganizer')
+		await vscode.workspace.getConfiguration('markdownCommentOutline')
 			.update('showIcons', false, vscode.ConfigurationTarget.Global);
 		provider.refreshCurrent();
 

@@ -12,15 +12,15 @@
 # Check all four surfaces: Outline panel, breadcrumbs, Ctrl+Shift+O, and the
 # Code Organizer Activity Bar view.
 
-# Setup ----
+# # Setup
 import os
 
-## Setup ----
+# ## Setup
 CONFIG_PATH = os.getenv("CONFIG_PATH", "config.toml")
 
-### Details ----
+# ### Details
 RETRIES = 3
 TIMEOUT = 30
 
-#### Deep ----
+# #### Deep
 DEBUG = False

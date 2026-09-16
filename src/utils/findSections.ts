@@ -1,4 +1,4 @@
-// 1. Type Definitions ----
+// # 1. Type Definitions
 export interface SectionMatch {
   name: string;
   index: number;
@@ -9,93 +9,32 @@ export interface SectionMatch {
   uniqueId: string; // New property: name + index for unique identification
 }
 
-/**
- * A comment style, as data. To support a new comment token, add one entry to
- * COMMENT_PATTERNS — no new regex loop and no new depth branch is needed.
- */
-interface PatternSpec {
-  /**
-   * Regex source with exactly two capture groups: (1) the depth-bearing symbols,
-   * (2) the section name. Group 1 is usually the comment token itself, but not
-   * always — the Mermaid entry captures its hashes, not its `%%`.
-   */
-  source: string;
-  /** Characters of the depth-bearing symbol per level (`#` = 1, `//` and `--` = 2). */
-  symbolUnit: number;
-}
+/** Each pattern captures the heading hashes and the plain-text title. */
+const headingSource = (open: string, close = ''): string =>
+  String.raw`^[ \t]*${open}[ \t]+(#{1,6})[ \t]+([^\r\n]+?)${close}[ \t]*$`;
 
-// 2. Pattern Table ----
-/**
- * Dash-terminated comment sections: `<token> Section Name ----`.
- *
- * The token pattern is spelled out per entry rather than derived, because the
- * quantifiers genuinely differ: `#` is bounded at 4 while `//` and `--` are
- * unbounded. Generating `(#+)` instead of `(#{1,4})` would change parsed names
- * — on `##### Level 5 ----` the 5th `#` is currently part of the name.
- *
- * Three of the gaps in this shape are `\s` classes — before the name, before the
- * dash run, and after it — and **`\s` matches `\n`**. So by default a match can
- * run past the end of its own line: `"#\nName ----"` and `"# Name\n----"` are each
- * one section today. That is long-standing behaviour for `#`, `//` and `--`,
- * harmless only while no two entries can claim the same line, and left alone here
- * rather than changed underneath four comment styles at once — see #56.
- *
- * `singleLine` swaps all three for `[ \t]` classes, confining the entry to one
- * physical line. An entry whose token overlaps another entry's territory has to
- * set it; Mermaid's `%%` is the first that does. It does not affect CRLF, which
- * works because `$` under `/m` treats `\r` as a line terminator, not because the
- * trailing gap absorbs it.
- */
-const dashSource = (tokenPattern: string, singleLine = false): string => {
-  const nameGap = singleLine ? String.raw`[ \t]*` : String.raw`\s*`;
-  const dashGap = singleLine ? String.raw`[ \t]+` : String.raw`\s+`;
-  const tailGap = singleLine ? String.raw`[ \t]*` : String.raw`\s*`;
-  return String.raw`^[ \t]*${tokenPattern}${nameGap}(.+?)${dashGap}[-]{4,}${tailGap}$`;
-};
-
-const COMMENT_PATTERNS: PatternSpec[] = [
-  // Hash comments: # Section Name ---- (Python, R, shell, etc.)
-  { source: dashSource(String.raw`(#{1,4})`), symbolUnit: 1 },
-
-  // Double slash comments: // Section Name ---- (JS, TS, C, C++, C#, Java, Go, Rust, Swift)
-  { source: dashSource(String.raw`(\/\/+)`), symbolUnit: 2 },
-
-  // SQL comments: -- Section Name ---- (SQL)
-  { source: dashSource(String.raw`(--+)`), symbolUnit: 2 },
-
-  // JSX comments: {/* // Section Name ---- */} (React, JSX, TSX)
-  // Hand-written — the wrapper makes its shape different from the dash family.
-  { source: String.raw`^[ \t]*\{\/\*\s*(\/\/+)\s*(.+?)\s+[-]{4,}\s*\*\/\s*\}`, symbolUnit: 2 },
-
-  // Mermaid comments: %% # Section Name ----
-  // The one entry whose capture group 1 is not its comment token: depth comes from
-  // the hashes, not the `%%`, so `symbolUnit` is 1. See ./CLAUDE.md for why.
-  // `singleLine` because this is the first token that overlaps another entry's
-  // territory — allowed to span lines, a `%%`-and-hashes line binds to a `#` header
-  // below it, duplicating that header's section or swallowing it outright (#56).
-  { source: dashSource(String.raw`%%[ \t]*(#{1,4})`, true), symbolUnit: 1 },
+const COMMENT_PATTERNS = [
+  headingSource('#'),
+  headingSource(String.raw`\/\/`),
+  headingSource('--'),
+  headingSource('%%'),
+  headingSource(String.raw`\/\*`, String.raw`[ \t]*\*\/`),
+  headingSource('<!--', String.raw`[ \t]*-->`),
+  headingSource(String.raw`\{\/\*`, String.raw`[ \t]*\*\/[ \t]*\}`),
 ];
 
-const MARKDOWN_PATTERNS: PatternSpec[] = [
-  // Markdown/Quarto headers: # Header, ## Header, etc. (without requiring ----)
-  { source: String.raw`^(#{1,6})\s+(.+?)\s*$`, symbolUnit: 1 },
-];
+// Keep native Markdown/Quarto recognition separate from comment headings.
+const MARKDOWN_PATTERNS = [String.raw`^(#{1,6})\s+(.+?)\s*$`];
 
-const MAX_DEPTH = 4;
-
-/** Depth from the matched depth-bearing symbols. Covers every comment style. */
-const depthFor = (symbols: string, symbolUnit: number): number =>
-  Math.min(Math.max(1, Math.floor(symbols.length / symbolUnit)), MAX_DEPTH);
-
-// 3. Main Section Parser ----
+// # 3. Main Section Parser
 /**
  * Find all section matches in text.
  * `COMMENT_PATTERNS` is the list of supported comment syntaxes — read it there
  * rather than duplicating it here, where it only drifts as the table grows.
  * Special handling for Markdown/Quarto: headers without ----
  */
-export function findSections(text: string, languageId?: string): SectionMatch[] {
-  // console.log(`[Code Organizer > findSections] Processing file type: ${languageId}`);
+export function findSections(text: string, languageId?: string, maxNestingLevel = 6): SectionMatch[] {
+  // console.log(`[Markdown Comment Outline > findSections] Processing file type: ${languageId}`);
   const matches: SectionMatch[] = [];
 
   // Check if this is a Markdown or Quarto file
@@ -183,10 +122,42 @@ export function findSections(text: string, languageId?: string): SectionMatch[] 
     // showing none at all.
   }
 
+  // Only standalone, single-line block comments are headings. Ignore interiors
+  // of multiline comment blocks opened at the start of a line (lightweight scan,
+  // not a language lexer; comment-looking text inside multiline strings remains
+  // subject to the same line-based recognition as upstream).
+  const blockRanges: { start: number; end: number }[] = [];
+  if (!isMarkdownOrQuarto) {
+    let closer: string | undefined;
+    let start = 0;
+    let offset = 0;
+    for (const line of text.split('\n')) {
+      if (closer) {
+        if (line.includes(closer)) {
+          blockRanges.push({ start, end: offset + line.length });
+          closer = undefined;
+        }
+      } else {
+        const opening = /^[ \t]*(\{?\/\*|<!--)/.exec(line);
+        if (opening) {
+          const endToken = opening[1] === '<!--' ? '-->' : '*/';
+          if (!line.slice(opening[0].length).includes(endToken)) {
+            closer = endToken;
+            start = offset;
+          }
+        }
+      }
+      offset += line.length + 1;
+    }
+    if (closer) {
+      blockRanges.push({ start, end: text.length });
+    }
+  }
+
   // Helper function to check if a match index is inside an excluded range
   const isExcluded = (matchIndex: number): boolean => {
     if (!isMarkdownOrQuarto) {
-      return false;
+      return blockRanges.some(range => matchIndex >= range.start && matchIndex <= range.end);
     }
 
     const lines = text.substring(0, matchIndex).split('\n');
@@ -197,29 +168,30 @@ export function findSections(text: string, languageId?: string): SectionMatch[] 
     );
   };
 
-  //// 3.1 Pattern Construction ----
+  // ## 3.1 Pattern Construction
   // Compile the specs fresh on every call. The RegExp objects are deliberately
   // NOT hoisted to module level: /gm regexes carry `lastIndex` between uses, and
   // per-call construction keeps that state from leaking across documents.
   const patterns = (isMarkdownOrQuarto ? MARKDOWN_PATTERNS : COMMENT_PATTERNS)
-    .map(spec => ({ regex: new RegExp(spec.source, 'gm'), symbolUnit: spec.symbolUnit }));
+    .map(source => new RegExp(source, 'gm'));
 
-  //// 3.2 Pattern Matching Loop ----
+  // ## 3.2 Pattern Matching Loop
   for (const pattern of patterns) {
     let match: RegExpExecArray | null;
 
-    while ((match = pattern.regex.exec(text)) !== null) {
+    while ((match = pattern.exec(text)) !== null) {
       const depthSymbols = match[1];
       const sectionName = match[2].trim();
-      const depth = depthFor(depthSymbols, pattern.symbolUnit);
+      const depth = depthSymbols.length;
 
-      ////// 3.2.1 Section Validation ----
+      // ### 3.2.1 Section Validation
       // Skip if section name is empty or just dashes/whitespace
       // Also skip if this match is inside an excluded range — a code block or
       // YAML front matter (for Markdown/Quarto)
-      if (sectionName && !sectionName.match(/^[-\s]*$/) && !isExcluded(match.index)) {
+      if (sectionName && depth <= maxNestingLevel &&
+          (!isMarkdownOrQuarto || !sectionName.match(/^[-\s]*$/)) && !isExcluded(match.index)) {
 
-        ////// 3.2.2 Match Storage ----
+        // ### 3.2.2 Match Storage
         // Create unique ID by combining name and index
         const uniqueId = `${sectionName}_${match.index}`;
 
@@ -239,17 +211,17 @@ export function findSections(text: string, languageId?: string): SectionMatch[] 
     // and exec() already resets lastIndex to 0 when it returns null.
   }
 
-  //// 3.3 Result Sorting ----
+  // ## 3.3 Result Sorting
   // Sort matches by index to maintain document order
   matches.sort((a, b) => a.index - b.index);
 
-  //// 3.4 Parent Resolution ----
+  // ## 3.4 Parent Resolution
   // Nearest strictly smaller depth, scanning backwards. This runs here and NOT
   // inside the match loop: 3.2 walks one pattern at a time over the whole text,
   // so `matches` is pattern-ordered until 3.3 sorts it. A backwards scan before
   // that finds the last-*pushed* shallower section, not the nearest *preceding*
   // one — and in a file mixing two comment styles those differ. The JSX pattern
-  // runs after `//`, so `{/* //// Sub ---- */}` between `// A ----` and
+  // runs after `//`, so `{/* ## Sub */}` between `// A ----` and
   // `// B ----` resolved to B, a section starting further down the document
   // (#54). Keep resolution downstream of the sort.
   for (let i = 0; i < matches.length; i++) {

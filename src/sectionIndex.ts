@@ -2,24 +2,25 @@ import * as vscode from 'vscode';
 import { SectionMatch, findSections } from './utils/findSections';
 import { buildChildrenMap } from './utils/sectionTree';
 
-// 1. Cache Entry ----
+// # 1. Cache Entry
 interface CacheEntry {
   /** The `document.version` this entry was parsed from. */
   version: number;
   /**
    * The `document.languageId` this entry was parsed under. Part of the validity
    * check, not decoration: `findSections` branches on it — markdown/quarto match
-   * `# Header` with no `----`, every other language requires one — and switching
+   * native `# Header`, while other languages require a comment opener — and switching
    * a file's language mode mutates `languageId` on the *same document object*
    * **without bumping `version`**. Keying on version alone would serve sections
    * parsed under the old grammar forever.
    */
   languageId: string;
+  maxNestingLevel: number;
   sections: readonly SectionMatch[];
   childrenByParentId: ReadonlyMap<string, readonly SectionMatch[]>;
 }
 
-// 2. Section Index ----
+// # 2. Section Index
 /**
  * One parse per (document URI, `document.version`, `document.languageId`),
  * shared by both consumers.
@@ -40,7 +41,7 @@ interface CacheEntry {
  * `getSections` returns the **cached array itself, not a copy**, typed
  * `readonly` so the compiler holds callers to it. Reference identity is what
  * lets a test prove that no re-parse happened (see `sectionIndex.test.ts`), and
- * it matches `CodeOrganizerTreeDataProvider.getSections()`, which has always
+ * it matches `MarkdownCommentOutlineTreeDataProvider.getSections()`, which has always
  * handed back its own array.
  */
 export class SectionIndex implements vscode.Disposable {
@@ -68,19 +69,24 @@ export class SectionIndex implements vscode.Disposable {
 
   private entryFor(document: vscode.TextDocument): CacheEntry {
     const key = document.uri.toString();
+    const configured = vscode.workspace.getConfiguration('markdownCommentOutline', document.uri)
+      .get<number>('maxNestingLevel', 6);
+    const maxNestingLevel = Number.isInteger(configured) ? Math.min(6, Math.max(1, configured)) : 6;
     const cached = this.cache.get(key);
     if (
       cached &&
       cached.version === document.version &&
-      cached.languageId === document.languageId
+      cached.languageId === document.languageId &&
+      cached.maxNestingLevel === maxNestingLevel
     ) {
       return cached;
     }
 
-    const sections = findSections(document.getText(), document.languageId);
+    const sections = findSections(document.getText(), document.languageId, maxNestingLevel);
     const entry: CacheEntry = {
       version: document.version,
       languageId: document.languageId,
+      maxNestingLevel,
       sections,
       childrenByParentId: buildChildrenMap(sections)
     };

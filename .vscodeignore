@@ -1,23 +1,8 @@
-.vscode/**
-.vscode-test/**
-out/**
-node_modules/**
-src/**
-.gitignore
-.yarnrc
-esbuild.js
-vsc-extension-quickstart.md
-**/tsconfig.json
-**/eslint.config.mjs
-**/*.map
-**/*.ts
-**/.vscode-test.*
-test-files/**
-.claude/**
-.context/**
-
-# Secrets. This file does NOT inherit from .gitignore — vsce only falls back to
-# .gitignore when .vscodeignore is absent, so anything gitignored must be
-# repeated here or it ships inside the .vsix. A PAT in .env reached the
-# Marketplace this way once; keep these patterns.
-**/.env*
+**/*
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE
+!icon_v2.png
+!dist/extension.js
+!resources/activity-bar-icon.svg

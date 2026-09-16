@@ -12,7 +12,7 @@ let currentSectionDecoration: vscode.TextEditorDecorationType | undefined;
  * asking for a color nobody declares, which resolves to nothing and silently
  * drops the highlight. `decorations.test.ts` pins the two together.
  */
-export const CURRENT_SECTION_BACKGROUND = 'codeOrganizer.currentSectionBackground';
+export const CURRENT_SECTION_BACKGROUND = 'markdownCommentOutline.currentSectionBackground';
 
 export function initializeDecorations(): vscode.TextEditorDecorationType {
   if (!currentSectionDecoration) {

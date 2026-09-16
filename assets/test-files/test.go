@@ -1,4 +1,4 @@
-// 1. Go Package ----
+// # 1. Go Package
 package main
 
 import (
@@ -26,7 +26,7 @@ fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 
-//// 1.1 Struct Definitions ----
+// ## 1.1 Struct Definitions
 type User struct {
 	ID    int
 	Name  string
@@ -57,7 +57,7 @@ fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 
-//// 1.2 Methods ----
+// ## 1.2 Methods
 func (us *UserService) AddUser(user User) {
 	us.users = append(us.users, user)
 }
@@ -91,9 +91,9 @@ fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 
-// 2. Utility Functions ----
+// # 2. Utility Functions
 
-//// 2.1 String Helpers ----
+// ## 2.1 String Helpers
 func capitalizeWords(s string) string {
 	words := strings.Fields(s)
 	for i, word := range words {
@@ -122,7 +122,7 @@ fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 
-//// 2.2 Validation ----
+// ## 2.2 Validation
 func isValidEmail(email string) bool {
 	return strings.Contains(email, "@") && strings.Contains(email, ".")
 }
@@ -136,20 +136,20 @@ fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
-////// 2.2.1 validation phase A ----
+// ### 2.2.1 validation phase A
 fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
-////// 2.2.2 validation phase B ----
+// ### 2.2.2 validation phase B
 fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 fmt.Println("filler")
 
-// 3. Main Function ----
+// # 3. Main Function
 func main() {
 	service := &UserService{}
 	

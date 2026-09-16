@@ -1,62 +1,32 @@
 {
-  "name": "code-organizer",
-  "displayName": "🗂️ Code Organizer",
-  "description": "Transform your code into organized, navigable sections using simple comment patterns. Create table-of-contents-like structure with # Section Name ---- syntax. Works with Python, JavaScript, TypeScript, React/JSX, C/C++, Java, Go, Rust, PHP, SQL and more. Perfect for large files and data science notebooks.",
-  "version": "0.2.1",
-  "publisher": "ran-codes",
+  "name": "markdown-comment-outline",
+  "displayName": "Markdown Comment Outline",
+  "description": "Navigate code using Markdown headings in comments: // ## Section, # ## Section, /* ## Section */ and more.",
+  "version": "0.1.0",
+  "publisher": "HyperNucleus",
   "author": {
-    "name": "ran-codes",
-    "url": "https://github.com/ran-codes"
+    "name": "HyperNucleus",
+    "url": "https://github.com/HyperNucleus"
   },
   "license": "MIT",
   "icon": "icon_v2.png",
   "preview": false,
   "engines": {
-    "vscode": "^1.60.0"
+    "vscode": "^1.137.0",
+    "node": ">=24.0.0"
   },
   "categories": [
     "Other",
-    "Formatters",
-    "Visualization",
-    "Programming Languages"
+    "Visualization"
   ],
   "keywords": [
     "outline",
+    "markdown",
+    "comments",
     "navigation",
     "sections",
-    "comments",
-    "code organization",
-    "document outline",
-    "table of contents",
-    "toc",
-    "structure",
-    "folding",
     "breadcrumbs",
-    "symbol provider",
-    "goto symbol",
-    "code structure",
-    "file organization",
-    "code sections",
-    "comment patterns",
-    "hierarchical",
-    "nested sections",
-    "minimap",
-    "productivity",
-    "workflow",
-    "developer tools",
-    "python",
-    "javascript",
-    "typescript",
-    "java",
-    "c++",
-    "go",
-    "rust",
-    "php",
-    "sql",
-    "r",
-    "data science",
-    "notebook",
-    "large files"
+    "symbols"
   ],
   "activationEvents": [
     "*",
@@ -66,33 +36,26 @@
     "color": "#1e1e1e",
     "theme": "dark"
   },
-  "badges": [
-    {
-      "url": "https://img.shields.io/github/stars/ran-codes/code-organizer-vscode?style=social",
-      "href": "https://github.com/ran-codes/code-organizer-vscode",
-      "description": "Star on GitHub"
-    }
-  ],
-  "qna": "https://github.com/ran-codes/code-organizer-vscode/discussions",
+  "qna": false,
   "repository": {
     "type": "git",
-    "url": "https://github.com/ran-codes/code-organizer-vscode.git"
+    "url": "https://github.com/HyperNucleus/markdown-comment-outline.git"
   },
   "bugs": {
-    "url": "https://github.com/ran-codes/code-organizer-vscode/issues"
+    "url": "https://github.com/HyperNucleus/markdown-comment-outline/issues"
   },
-  "homepage": "https://github.com/ran-codes/code-organizer-vscode#readme",
+  "homepage": "https://github.com/HyperNucleus/markdown-comment-outline#readme",
   "main": "./dist/extension.js",
   "contributes": {
     "configuration": {
-      "title": "Code Organizer",
+      "title": "Markdown Comment Outline",
       "properties": {
-        "codeOrganizer.enable": {
+        "markdownCommentOutline.enable": {
           "type": "boolean",
           "default": true,
-          "description": "Enable/disable Code Organizer extension"
+          "description": "Enable/disable Markdown Comment Outline extension"
         },
-        "codeOrganizer.supportedLanguages": {
+        "markdownCommentOutline.supportedLanguages": {
           "type": "array",
           "items": {
             "type": "string"
@@ -102,60 +65,54 @@
           ],
           "description": "List of languages to support. Use '*' for all languages, or specify individual languages like 'python', 'javascript', etc."
         },
-        "codeOrganizer.minDashes": {
-          "type": "number",
-          "default": 4,
-          "minimum": 2,
-          "description": "Minimum number of dashes required for section recognition (e.g., # Section ----)"
-        },
-        "codeOrganizer.maxNestingLevel": {
-          "type": "number",
-          "default": 4,
+        "markdownCommentOutline.maxNestingLevel": {
+          "type": "integer",
+          "default": 6,
           "minimum": 1,
           "maximum": 6,
           "description": "Maximum nesting level for sections (1-6)"
         },
-        "codeOrganizer.showIcons": {
+        "markdownCommentOutline.showIcons": {
           "type": "boolean",
           "default": true,
-          "description": "Show the depth icon before each section name in the Code Organizer view. Turn off for a text-only outline. This does not affect the built-in Outline view or breadcrumbs, whose icons VS Code draws itself — use the built-in 'outline.icons' and 'breadcrumbs.icons' settings for those."
+          "description": "Show the depth icon before each section name in the Markdown Comment Outline view. Turn off for a text-only outline. This does not affect the built-in Outline view or breadcrumbs, whose icons VS Code draws itself \u2014 use the built-in 'outline.icons' and 'breadcrumbs.icons' settings for those."
         }
       }
     },
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "codeOrganizer",
-          "title": "Code Organizer",
+          "id": "markdownCommentOutline",
+          "title": "Markdown Comment Outline",
           "icon": "resources/activity-bar-icon.svg"
         }
       ]
     },
     "views": {
-      "codeOrganizer": [
+      "markdownCommentOutline": [
         {
-          "id": "codeOrganizerOutlineActivity",
-          "name": "Code Organizer",
+          "id": "markdownCommentOutlineOutlineActivity",
+          "name": "Markdown Comment Outline",
           "when": "resourceLangId"
         }
       ]
     },
     "commands": [
       {
-        "command": "codeOrganizer.activate",
+        "command": "markdownCommentOutline.activate",
         "title": "Activate",
-        "category": "Code Organizer"
+        "category": "Markdown Comment Outline"
       },
       {
-        "command": "codeOrganizer.showView",
-        "title": "Show Code Organizer",
-        "category": "Code Organizer"
+        "command": "markdownCommentOutline.showView",
+        "title": "Show Markdown Comment Outline",
+        "category": "Markdown Comment Outline"
       }
     ],
     "colors": [
       {
-        "id": "codeOrganizer.currentSectionBackground",
-        "description": "Background of the line holding the section your cursor is in. Must not be opaque — VS Code paints extension decorations on top of the text selection, so a solid color here hides selections made on that line.",
+        "id": "markdownCommentOutline.currentSectionBackground",
+        "description": "Background of the line holding the section your cursor is in. Must not be opaque \u2014 VS Code paints extension decorations on top of the text selection, so a solid color here hides selections made on that line.",
         "defaults": {
           "dark": "#ffffff0f",
           "light": "#0000000a",
@@ -174,24 +131,25 @@
     "package": "npm run check-types && npm run lint && node esbuild.js --production",
     "compile-tests": "tsc -p . --outDir out",
     "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "pretest": "npm run compile-tests && npm run compile",
     "check-types": "tsc --noEmit",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "lint": "oxlint src --deny-warnings",
+    "test": "vscode-test",
+    "package:vsix": "vsce package --no-dependencies",
+    "test:unit": "npm run compile-tests && mocha --ui tdd \"out/test/**/*.test.js\" --ignore \"out/test/{sectionIndex,documentSymbolProvider,treeDataProvider,decorations,extension,cursorSync}.test.js\""
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.10",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.60.0",
-    "@typescript-eslint/eslint-plugin": "^8.31.1",
-    "@typescript-eslint/parser": "^8.31.1",
-    "@vscode/test-cli": "^0.0.11",
-    "@vscode/test-electron": "^2.5.2",
-    "@vscode/vsce": "^3.9.2",
-    "esbuild": "^0.25.3",
-    "eslint": "^9.25.1",
-    "npm-run-all": "^4.1.5",
-    "ovsx": "^1.1.1",
-    "typescript": "^5.8.3"
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.20.3",
+    "@types/vscode": "1.137.0",
+    "@vscode/test-cli": "0.0.15",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.0.0",
+    "esbuild": "0.28.2",
+    "npm-run-all": "4.1.5",
+    "ovsx": "1.2.0",
+    "typescript": "7.0.2",
+    "mocha": "12.0.1",
+    "oxlint": "1.83.0"
   }
 }

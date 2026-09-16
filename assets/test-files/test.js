@@ -1,4 +1,4 @@
-// 1. App Configuration ----
+// # 1. App Configuration
 const config = {
     apiUrl: 'https://api.example.com',
     timeout: 5000
@@ -24,7 +24,7 @@ print('hi')
 print('hi')
 print('hi')
 
-//// 1.1 Helper Functions ----
+// ## 1.1 Helper Functions
 function getData() {
     return fetch(config.apiUrl);
 }
@@ -53,7 +53,7 @@ function processData(data) {
     return data.map(item => item.value);
 }
 
-// 2. Main App ----
+// # 2. Main App
 class App {
     constructor() {
         this.data = [];
@@ -84,7 +84,7 @@ print('hi')
 print('hi')
 print('hi')
 
-//// 2.1 Event Handlers ----
+// ## 2.1 Event Handlers
 document.addEventListener('click', handleClick);
 
 function handleClick(event) {

@@ -42,7 +42,7 @@ suite('Section Index Tests (shared parse cache)', () => {
 	}
 
 	test('Should parse a document once per version', async () => {
-		const doc = await pythonDoc('# Root ----\n## Child ----\n');
+		const doc = await pythonDoc('# # Root\n# ## Child\n');
 
 		const sections = index.getSections(doc);
 		assert.strictEqual(sections.length, 2);
@@ -55,7 +55,7 @@ suite('Section Index Tests (shared parse cache)', () => {
 	test('Should serve sections and children map from one parse', async () => {
 		// The two consumers ask for different views of the same parse; neither
 		// call may trigger a second one.
-		const doc = await pythonDoc('# Root ----\n## Child ----\n');
+		const doc = await pythonDoc('# # Root\n# ## Child\n');
 
 		const sections = index.getSections(doc);
 		const childrenMap = index.getChildrenMap(doc);
@@ -71,12 +71,12 @@ suite('Section Index Tests (shared parse cache)', () => {
 	});
 
 	test('Should re-parse after an edit bumps the document version', async () => {
-		const doc = await pythonDoc('# Root ----\n');
+		const doc = await pythonDoc('# # Root\n');
 		const before = index.getSections(doc);
 		const versionBefore = doc.version;
 
 		const edit = new vscode.WorkspaceEdit();
-		edit.insert(doc.uri, new vscode.Position(0, 0), '# Added ----\n');
+		edit.insert(doc.uri, new vscode.Position(0, 0), '# # Added\n');
 		assert.ok(await vscode.workspace.applyEdit(edit), 'edit did not apply');
 
 		// The premise of the test: the version really did change.
@@ -90,8 +90,8 @@ suite('Section Index Tests (shared parse cache)', () => {
 	test('Should keep separate entries for separate documents', async () => {
 		// A single-entry cache would re-parse on every alternation between two
 		// documents — exactly what split editors do.
-		const a = await pythonDoc('# A ----\n');
-		const b = await pythonDoc('# B ----\n');
+		const a = await pythonDoc('# # A\n');
+		const b = await pythonDoc('# # B\n');
 
 		const firstA = index.getSections(a);
 		const firstB = index.getSections(b);
@@ -105,7 +105,7 @@ suite('Section Index Tests (shared parse cache)', () => {
 	test('Should re-parse after eviction', async () => {
 		// `evict` is what the onDidCloseTextDocument listener calls; testing it
 		// directly avoids depending on close-event timing in the test host.
-		const doc = await pythonDoc('# Root ----\n');
+		const doc = await pythonDoc('# # Root\n');
 		const before = index.getSections(doc);
 
 		index.evict(doc.uri);
@@ -150,4 +150,22 @@ suite('Section Index Tests (shared parse cache)', () => {
 			['Header', 'Sub']
 		);
 	});
+  test('Depth configuration invalidates the shared snapshot and child map', async () => {
+    const config = vscode.workspace.getConfiguration('markdownCommentOutline');
+    const previous = config.inspect<number>('maxNestingLevel')?.globalValue;
+    const document = await pythonDoc('# # Root\n# ## Child\n# ###### Deep');
+    try {
+      await config.update('maxNestingLevel', 6, vscode.ConfigurationTarget.Global);
+      const before = index.getSections(document);
+      assert.strictEqual(before.length, 3);
+      await config.update('maxNestingLevel', 2, vscode.ConfigurationTarget.Global);
+      const after = index.getSections(document);
+      assert.notStrictEqual(after, before);
+      assert.deepStrictEqual(after.map(s => s.name), ['Root', 'Child']);
+      assert.strictEqual(index.getChildrenMap(document).has(before[1].uniqueId), false);
+    } finally {
+      await config.update('maxNestingLevel', previous, vscode.ConfigurationTarget.Global);
+    }
+  });
+
 });

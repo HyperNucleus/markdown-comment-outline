@@ -32,8 +32,8 @@ suite('Decoration Color Tests (#40)', () => {
 	 * this asserts against the manifest VS Code actually loaded.
 	 */
 	function contributedColors(): ContributedColor[] {
-		const extension = vscode.extensions.getExtension('ran-codes.code-organizer');
-		assert.ok(extension, 'Extension ran-codes.code-organizer not found in the host');
+		const extension = vscode.extensions.getExtension('HyperNucleus.markdown-comment-outline');
+		assert.ok(extension, 'Extension HyperNucleus.markdown-comment-outline not found in the host');
 
 		return extension.packageJSON?.contributes?.colors ?? [];
 	}

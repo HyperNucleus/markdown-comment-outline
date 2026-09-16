@@ -1,6 +1,6 @@
 import { SectionMatch } from './findSections';
 
-// 1. Hierarchy Helpers ----
+// # 1. Hierarchy Helpers
 /**
  * Group sections by their parent's `uniqueId`.
  *

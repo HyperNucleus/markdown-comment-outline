@@ -22,13 +22,13 @@ suite('Mixed Comment Syntax Test Suite', () => {
         // The reproduction from #54, verbatim. `//` is listed before JSX in
         // COMMENT_PATTERNS, so at the moment "Sub of A" matched, both "Part A"
         // and "Part B" were already pushed and "Part B" was last.
-        const text = `// Part A ----
+        const text = `// # Part A
 const a = 1;
 
-{/* //// Sub of A ---- */}
+{/* ## Sub of A */}
 const b = 2;
 
-// Part B ----
+// # Part B
 const c = 3;
 `;
         const sections = findSections(text, 'typescriptreact');
@@ -57,13 +57,13 @@ const c = 3;
         // `#` is listed before `//`, so this is the same ordering bug reached
         // through a different pair of patterns. Kept because a fix that special-
         // cased JSX would pass the test above and fail this one.
-        const text = `# Part A ----
+        const text = `# # Part A
 value = 1
 
-//// Sub of A ----
+// ## Sub of A
 value = 2
 
-# Part B ----
+# # Part B
 value = 3
 `;
         const sections = findSections(text, 'plaintext');
@@ -81,14 +81,14 @@ value = 3
     test('Parent is the nearest preceding shallower section across three styles', () => {
         // Interleaves `#`, `//` and JSX so that for each child the correct
         // parent is neither the first nor the last match of its own pattern.
-        const text = `# Root One ----
-{/* //// Child Of Root One ---- */}
+        const text = `# # Root One
+{/* ## Child Of Root One */}
 
-// Root Two ----
-{/* //// Child Of Root Two ---- */}
+// # Root Two
+{/* ## Child Of Root Two */}
 
-# Root Three ----
-{/* //// Child Of Root Three ---- */}
+# # Root Three
+{/* ## Child Of Root Three */}
 `;
         const sections = findSections(text, 'typescriptreact');
 
@@ -113,12 +113,12 @@ value = 3
         // has to skip both to reach `Root One` — three matches back and from the
         // *other* pattern. That shape fails for an inline scan and also for any
         // "nearest preceding match regardless of depth" shortcut.
-        const text = `// Root One ----
-{/* //// Child A ---- */}
-{/* ////// Grandchild ---- */}
-{/* //// Child B ---- */}
+        const text = `// # Root One
+{/* ## Child A */}
+{/* ### Grandchild */}
+{/* ## Child B */}
 
-// Root Two ----
+// # Root Two
 `;
         const sections = findSections(text, 'jsx');
 
@@ -151,11 +151,11 @@ value = 3
         // `uniqueId` is `${name}_${index}`, so the two "Setup" sections differ
         // only by offset. A child must bind to the one above it, and the fix
         // must not collapse them by name.
-        const text = `# Setup ----
-{/* //// From Hash Setup ---- */}
+        const text = `# # Setup
+{/* ## From Hash Setup */}
 
-// Setup ----
-{/* //// From Slash Setup ---- */}
+// # Setup
+{/* ## From Slash Setup */}
 `;
         const sections = findSections(text, 'typescriptreact');
 
@@ -175,10 +175,10 @@ value = 3
     test('A parentless deep section stays parentless when a later root exists', () => {
         // Opening the file at depth 2 leaves nothing shallower before it. The
         // pattern-ordered scan would have handed it the `//` root below.
-        const text = `{/* //// Orphan ---- */}
+        const text = `{/* ## Orphan */}
 const a = 1;
 
-// Later Root ----
+// # Later Root
 const b = 2;
 `;
         const sections = findSections(text, 'typescriptreact');

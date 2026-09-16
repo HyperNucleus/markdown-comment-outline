@@ -1,6 +1,6 @@
 import { SectionMatch } from './findSections';
 
-// 1. Cursor Resolution ----
+// # 1. Cursor Resolution
 /**
  * The deepest section containing `offset`, or undefined when the cursor sits
  * outside every section.

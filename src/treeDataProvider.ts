@@ -11,7 +11,7 @@ import { SectionIndex } from './sectionIndex';
  * effect without a window reload.
  */
 export function showIconsEnabled(): boolean {
-  return vscode.workspace.getConfiguration('codeOrganizer').get<boolean>('showIcons', true);
+  return vscode.workspace.getConfiguration('markdownCommentOutline').get<boolean>('showIcons', true);
 }
 
 export class SectionTreeItem extends vscode.TreeItem {
@@ -45,16 +45,16 @@ export class SectionTreeItem extends vscode.TreeItem {
 
     // Command to jump to section
     this.command = {
-      command: 'codeOrganizer.goToSection',
+      command: 'markdownCommentOutline.goToSection',
       title: 'Go to Section',
       arguments: [section, document]
     };
 
-    this.contextValue = 'sectionItem';
+    this.contextValue = 'markdownCommentOutline.sectionItem';
   }
 }
 
-export class CodeOrganizerTreeDataProvider implements vscode.TreeDataProvider<SectionTreeItem> {
+export class MarkdownCommentOutlineTreeDataProvider implements vscode.TreeDataProvider<SectionTreeItem> {
   private _onDidChangeTreeData = new vscode.EventEmitter<SectionTreeItem | undefined | null>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
@@ -102,9 +102,9 @@ export class CodeOrganizerTreeDataProvider implements vscode.TreeDataProvider<Se
     }
 
     if (!element) {
-      // Root level - return depth 1 sections
+      // Root level - return all parentless sections
       return this.sections
-        .filter(s => s.depth === 1)
+        .filter(s => s.parentId === undefined)
         .map(s => this.getOrCreateTreeItem(s));
     } else {
       // Return children of this section
@@ -134,7 +134,8 @@ export class CodeOrganizerTreeDataProvider implements vscode.TreeDataProvider<Se
   }
 
   findTreeItemBySection(section: SectionMatch): SectionTreeItem | undefined {
-    return this.treeItemCache.get(section.uniqueId);
+    const current = this.sections.find(candidate => candidate.uniqueId === section.uniqueId);
+    return current ? this.getOrCreateTreeItem(current) : undefined;
   }
 
   /**

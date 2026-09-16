@@ -6,9 +6,9 @@ suite('Section Tree Tests (buildChildrenMap / childrenOf)', () => {
 
 	test('Should group children under their parent uniqueId', () => {
 		const text = `
-# Parent ----
-## Child A ----
-## Child B ----
+# # Parent
+# ## Child A
+# ## Child B
 `;
 		const sections = findSections(text);
 		const parent = sections.find(s => s.name === 'Parent')!;
@@ -23,11 +23,11 @@ suite('Section Tree Tests (buildChildrenMap / childrenOf)', () => {
 	test('Should omit parentless sections from the map', () => {
 		// A file that OPENS at depth 3 yields a parentless depth-3 section.
 		// `parentId === undefined` must never become a map key — both consumers
-		// build their root list from `depth === 1`, not from "has no parent".
+		// build their root list directly from parentless sections.
 		const text = `
-### Orphan ----
-# Root ----
-## Child ----
+# ### Orphan
+# # Root
+# ## Child
 `;
 		const sections = findSections(text);
 		const orphan = sections.find(s => s.name === 'Orphan')!;
@@ -49,10 +49,10 @@ suite('Section Tree Tests (buildChildrenMap / childrenOf)', () => {
 		// is per-style; only the final sort puts it back in document order. Both
 		// consumers render siblings in map order, so that sort is load-bearing here.
 		const text = `
-# Root ----
-## Hash Child ----
-//// Slash Child ----
-## Hash Child 2 ----
+# # Root
+# ## Hash Child
+// ## Slash Child
+# ## Hash Child 2
 `;
 		const sections = findSections(text);
 		const root = sections.find(s => s.name === 'Root')!;
@@ -72,8 +72,8 @@ suite('Section Tree Tests (buildChildrenMap / childrenOf)', () => {
 		// treeDataProvider derives TreeItemCollapsibleState from `map.has(...)`,
 		// so a leaf must not appear as a key.
 		const text = `
-# Parent ----
-## Leaf ----
+# # Parent
+# ## Leaf
 `;
 		const sections = findSections(text);
 		const leaf = sections.find(s => s.name === 'Leaf')!;
@@ -84,7 +84,7 @@ suite('Section Tree Tests (buildChildrenMap / childrenOf)', () => {
 	});
 
 	test('Should return an empty array for an unknown uniqueId', () => {
-		const map = buildChildrenMap(findSections('# Only ----\n'));
+		const map = buildChildrenMap(findSections('# # Only\n'));
 		assert.deepStrictEqual(childrenOf(map, 'No Such Section_999'), []);
 	});
 
@@ -97,10 +97,10 @@ suite('Section Tree Tests (buildChildrenMap / childrenOf)', () => {
 	test('Should key duplicate section names separately', () => {
 		// Names are not unique; uniqueId is what makes them addressable.
 		const text = `
-# Setup ----
-## Step ----
-# Setup ----
-## Step ----
+# # Setup
+# ## Step
+# # Setup
+# ## Step
 `;
 		const sections = findSections(text);
 		const setups = sections.filter(s => s.name === 'Setup');

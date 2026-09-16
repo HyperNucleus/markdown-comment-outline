@@ -4,16 +4,16 @@ import { childrenOf } from './utils/sectionTree';
 import { sectionRange } from './utils/vscodeHelpers';
 import { SectionIndex } from './sectionIndex';
 
-// 1. Document Symbol Provider Class ----
+// # 1. Document Symbol Provider Class
 /**
  * Document Symbol Provider for code organizer
  * Detects comment sections with pattern: # Section Name ----
  */
-export class CodeOrganizerDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
+export class MarkdownCommentOutlineDocumentSymbolProvider implements vscode.DocumentSymbolProvider {
 
   constructor(private readonly sectionIndex: SectionIndex) { }
 
-  //// 1.1 Child Symbol Processing ----
+  // ## 1.1 Child Symbol Processing
   /**
    * Helper method to add child symbols to a parent symbol (recursive)
    *
@@ -28,10 +28,10 @@ export class CodeOrganizerDocumentSymbolProvider implements vscode.DocumentSymbo
     document: vscode.TextDocument
   ): void {
 
-    ////// 1.1.1 Child Filtering ----
+    // ### 1.1.1 Child Filtering
     const children = childrenOf(childrenByParentId, parentMatch.uniqueId);
 
-    ////// 1.1.2 Child Symbol Creation ----
+    // ### 1.1.2 Child Symbol Creation
     if (children.length > 0) {
       for (let j = 0; j < children.length; j++) {
         const child = children[j];
@@ -50,21 +50,21 @@ export class CodeOrganizerDocumentSymbolProvider implements vscode.DocumentSymbo
     }
   }
 
-  //// 1.2 Main Symbol Provider Method ----
+  // ## 1.2 Main Symbol Provider Method
   /**
    * Main method called by VS Code when it needs symbols for a file
    */
   public provideDocumentSymbols(
     document: vscode.TextDocument,
-    token: vscode.CancellationToken
+    _token: vscode.CancellationToken
   ): vscode.DocumentSymbol[] {
 
-    ////// 1.2.1 Document Processing ----
+    // ### 1.2.1 Document Processing
     const all_matches: readonly SectionMatch[] = this.sectionIndex.getSections(document);
     const childrenByParentId = this.sectionIndex.getChildrenMap(document);
-    const matches = all_matches.filter((item: SectionMatch) => item.depth === 1);
+    const matches = all_matches.filter((item: SectionMatch) => item.parentId === undefined);
 
-    ////// 1.2.2 Symbol Generation ----
+    // ### 1.2.2 Symbol Generation
     const symbols: vscode.DocumentSymbol[] = [];
     for (let i = 0; i < matches.length; i++) {
       const match = matches[i];

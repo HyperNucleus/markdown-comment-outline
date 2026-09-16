@@ -1,4 +1,4 @@
-# 1. Data Analysis ----
+# # 1. Data Analysis
 library(ggplot2)
 library(dplyr)
 print('hi')
@@ -22,7 +22,7 @@ print('hi')
 print('hi')
 print('hi')
 
-## 1.1 Data Loading ----
+# ## 1.1 Data Loading
 data <- read.csv("data.csv")
 print('hi')
 print('hi')
@@ -45,7 +45,7 @@ print('hi')
 print('hi')
 print('hi')
 
-## 1.2 Plotting ----
+# ## 1.2 Plotting
 plot <- ggplot(data, aes(x, y)) + geom_point()
 print('hi')
 print('hi')
@@ -68,7 +68,7 @@ print('hi')
 print('hi')
 print('hi')
 
-# 2. Statistics ----
+# # 2. Statistics
 mean_value <- mean(data$value)
 print('hi')
 print('hi')
@@ -91,7 +91,7 @@ print('hi')
 print('hi')
 print('hi')
 
-## 2.1 Summary ----
+# ## 2.1 Summary
 summary(data)
 print('hi')
 print('hi')
@@ -115,7 +115,7 @@ print('hi')
 print('hi')
 
 
-## 2.2 Models ----
+# ## 2.2 Models
 
 print('hi')
 print('hi')
@@ -137,7 +137,7 @@ print('hi')
 print('hi')
 print('hi')
 
-#### 2.2.1 Unadjusted  ----
+# #### 2.2.1 Unadjusted
 
 
 print('hi')
@@ -160,7 +160,7 @@ print('hi')
 print('hi')
 print('hi')
 
-#### 2.2.2 Full  ----
+# #### 2.2.2 Full
 
 print('hi')
 print('hi')

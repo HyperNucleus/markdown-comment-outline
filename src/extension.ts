@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { CodeOrganizerDocumentSymbolProvider } from './documentSymbolProvider';
-import { CodeOrganizerTreeDataProvider } from './treeDataProvider';
+import { MarkdownCommentOutlineDocumentSymbolProvider } from './documentSymbolProvider';
+import { MarkdownCommentOutlineTreeDataProvider } from './treeDataProvider';
 import { SectionIndex } from './sectionIndex';
 import { registerCursorSync } from './cursorSync';
 import { initializeDecorations, disposeDecorations } from './decorations';
@@ -13,12 +13,12 @@ import { SectionMatch } from './utils/findSections';
  * rebuilding the tree is enough and a reload prompt for a cosmetic toggle would
  * be out of proportion.
  */
-const RELOAD_REQUIRED_SETTINGS = ['enable', 'supportedLanguages', 'minDashes', 'maxNestingLevel'];
+const RELOAD_REQUIRED_SETTINGS = ['enable', 'supportedLanguages', 'maxNestingLevel'];
 
 export function activate(context: vscode.ExtensionContext) {
 
-	// 1. Configuration ----
-	const config = vscode.workspace.getConfiguration('codeOrganizer');
+	// # 1. Configuration
+	const config = vscode.workspace.getConfiguration('markdownCommentOutline');
 	if (!config.get<boolean>('enable', true)) {
 		return;
 	}
@@ -26,14 +26,14 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(initializeLog());
 
-	// 2. Shared Parse ----
+	// # 2. Shared Parse
 	// One findSections call per (document URI, version), read by both providers.
 	const sectionIndex = new SectionIndex();
 	context.subscriptions.push(sectionIndex);
 
-	// 3. Providers ----
+	// # 3. Providers
 	// Feeds the built-in Outline, breadcrumbs, and Go to Symbol.
-	const symbolProvider = new CodeOrganizerDocumentSymbolProvider(sectionIndex);
+	const symbolProvider = new MarkdownCommentOutlineDocumentSymbolProvider(sectionIndex);
 	const selectors: vscode.DocumentSelector[] = supportedLanguages.includes('*')
 		? ['*']
 		: supportedLanguages.map(language => ({ language }));
@@ -44,8 +44,8 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	// Backs the custom Activity Bar TreeView.
-	const treeDataProvider = new CodeOrganizerTreeDataProvider(sectionIndex);
-	const treeViewActivity = vscode.window.createTreeView('codeOrganizerOutlineActivity', {
+	const treeDataProvider = new MarkdownCommentOutlineTreeDataProvider(sectionIndex);
+	const treeViewActivity = vscode.window.createTreeView('markdownCommentOutlineOutlineActivity', {
 		treeDataProvider: treeDataProvider,
 		showCollapseAll: true
 	});
@@ -55,10 +55,10 @@ export function activate(context: vscode.ExtensionContext) {
 	const decoration = initializeDecorations();
 	context.subscriptions.push(decoration);
 
-	// 4. Commands ----
+	// # 4. Commands
 	context.subscriptions.push(
 		vscode.commands.registerCommand(
-			'codeOrganizer.goToSection',
+			'markdownCommentOutline.goToSection',
 			(section: SectionMatch, document: vscode.TextDocument) => {
 				const editor = vscode.window.activeTextEditor;
 				if (editor && editor.document === document) {
@@ -74,26 +74,26 @@ export function activate(context: vscode.ExtensionContext) {
 			}
 		),
 
-		vscode.commands.registerCommand('codeOrganizer.showView', async () => {
+		vscode.commands.registerCommand('markdownCommentOutline.showView', async () => {
 			// The auto-generated .focus command for our view.
-			await vscode.commands.executeCommand('codeOrganizerOutlineActivity.focus');
+			await vscode.commands.executeCommand('markdownCommentOutlineOutlineActivity.focus');
 		}),
 
-		vscode.commands.registerCommand('codeOrganizer.activate', () => {
-			vscode.window.showInformationMessage('Code Organizer is already active and working!');
+		vscode.commands.registerCommand('markdownCommentOutline.activate', () => {
+			vscode.window.showInformationMessage('Markdown Comment Outline is already active and working!');
 		})
 	);
 
-	// 5. Cursor Sync ----
+	// # 5. Cursor Sync
 	const syncNow = registerCursorSync(context, treeViewActivity, treeDataProvider, decoration);
 	if (vscode.window.activeTextEditor) {
 		syncNow();
 	}
 
-	// 6. Configuration Changes ----
+	// # 6. Configuration Changes
 	context.subscriptions.push(
 		vscode.workspace.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('codeOrganizer.showIcons')) {
+			if (e.affectsConfiguration('markdownCommentOutline.showIcons')) {
 				// Every tree item is rebuilt by refresh(), which re-reads the setting.
 				// Goes through the tree's own document, never `activeTextEditor` — that
 				// is undefined while the Settings editor has focus, which is exactly
@@ -101,9 +101,9 @@ export function activate(context: vscode.ExtensionContext) {
 				treeDataProvider.refreshCurrent();
 			}
 
-			if (RELOAD_REQUIRED_SETTINGS.some(key => e.affectsConfiguration(`codeOrganizer.${key}`))) {
+			if (RELOAD_REQUIRED_SETTINGS.some(key => e.affectsConfiguration(`markdownCommentOutline.${key}`))) {
 				vscode.window.showInformationMessage(
-					'Code Organizer configuration changed. Please reload VS Code for changes to take effect.',
+					'Markdown Comment Outline configuration changed. Please reload VS Code for changes to take effect.',
 					'Reload'
 				).then(selection => {
 					if (selection === 'Reload') {

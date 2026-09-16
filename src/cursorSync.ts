@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
-import { CodeOrganizerTreeDataProvider, SectionTreeItem } from './treeDataProvider';
+import { MarkdownCommentOutlineTreeDataProvider, SectionTreeItem } from './treeDataProvider';
 import { updateSectionHighlight } from './decorations';
 import { getCurrentSection } from './utils/getCurrentSection';
 import { log } from './log';
 
-// 1. Constants ----
+// # 1. Constants
 /** Cursor movement is noisy; only the last move in a burst resolves a section. */
 const DEBOUNCE_MS = 150;
 
-// 2. Cursor Sync Registration ----
+// # 2. Cursor Sync Registration
 /**
  * Keep the outline in step with the cursor: highlight the containing section in
  * the editor and reveal it in the TreeView.
@@ -20,14 +20,14 @@ const DEBOUNCE_MS = 150;
 export function registerCursorSync(
   context: vscode.ExtensionContext,
   treeView: vscode.TreeView<SectionTreeItem>,
-  treeDataProvider: CodeOrganizerTreeDataProvider,
+  treeDataProvider: MarkdownCommentOutlineTreeDataProvider,
   decoration: vscode.TextEditorDecorationType
 ): () => Promise<void> {
 
   let updateTimeout: NodeJS.Timeout | undefined;
   let lastDocument: vscode.TextDocument | undefined;
 
-  //// 2.1 Sync Pass ----
+  // ## 2.1 Sync Pass
   async function syncPass(): Promise<void> {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
@@ -58,17 +58,10 @@ export function registerCursorSync(
       return;
     }
 
-    ////// 2.1.1 TreeView Reveal ----
+    // ### 2.1.1 TreeView Reveal
     const item = treeDataProvider.findTreeItemBySection(currentSection);
     if (!item) {
-      // Logged rather than skipped in silence. `reveal()` needs the cached
-      // TreeItem instance, and `refresh()` clears that cache while only
-      // `getChildren()` — which VS Code schedules asynchronously — refills it.
-      // Nothing above this awaits, so *every* pass that refreshed arrives here
-      // with an empty cache. Not a race it might lose: an edit resets
-      // `lastDocument` and forces a refresh, so the reveal does not fire at all
-      // while the user is typing. Pre-existing and deterministic — see #50.
-      log(`No cached tree item for "${currentSection.name}" — reveal skipped`);
+      log(`Section "${currentSection.name}" is no longer in the current tree`);
       return;
     }
 
@@ -79,7 +72,7 @@ export function registerCursorSync(
     }
   }
 
-  //// 2.2 Rejection Boundary ----
+  // ## 2.2 Rejection Boundary
   /**
    * Every caller of this is fire-and-forget — the debounce timer, the
    * active-editor listener, and `activate()`'s initial kick all discard the
@@ -94,7 +87,7 @@ export function registerCursorSync(
     }
   }
 
-  //// 2.3 Listeners ----
+  // ## 2.3 Listeners
   context.subscriptions.push(
     // Cursor moved — debounced.
     vscode.window.onDidChangeTextEditorSelection(() => {

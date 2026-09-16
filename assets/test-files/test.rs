@@ -1,4 +1,4 @@
-// 1. Rust Application ----
+// # 1. Rust Application
 use std::collections::HashMap;
 use std::fmt;
 use std::io::{self, Write};
@@ -27,7 +27,7 @@ impl fmt::Display for UserError {
     }
 }
 
-//// 1.1 Struct Definitions ----
+// ## 1.1 Struct Definitions
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct User {
     id: u32,
@@ -66,7 +66,7 @@ trait UserRepository {
     fn delete(&mut self, id: u32) -> Result<(), UserError>;
 }
 
-//// 1.2 Implementation ----
+// ## 1.2 Implementation
 impl UserService {
     fn new() -> Self {
         UserService {
@@ -113,9 +113,9 @@ impl UserRepository for UserService {
     }
 }
 
-// 2. Utility Functions ----
+// # 2. Utility Functions
 
-//// 2.1 String Helpers ----
+// ## 2.1 String Helpers
 fn capitalize_first(s: &str) -> String {
     let mut chars = s.chars();
     match chars.next() {
@@ -136,7 +136,7 @@ fn slugify(input: &str) -> String {
         .join("-")
 }
 
-////// 2.1.1 Text Processing ----
+// ### 2.1.1 Text Processing
 fn truncate_text(text: &str, max_length: usize) -> String {
     if text.len() <= max_length {
         text.to_string()
@@ -153,7 +153,7 @@ fn remove_special_chars(input: &str) -> String {
     input.chars().filter(|c| c.is_alphanumeric() || c.is_whitespace()).collect()
 }
 
-////// 2.1.2 Format Helpers ----
+// ### 2.1.2 Format Helpers
 fn format_name(first: &str, last: &str) -> String {
     format!("{} {}", capitalize_first(first), capitalize_first(last))
 }
@@ -166,7 +166,7 @@ fn format_percentage(value: f64) -> String {
     format!("{:.1}%", value * 100.0)
 }
 
-//// 2.2 Validation ----
+// ## 2.2 Validation
 fn is_valid_email(email: &str) -> bool {
     email.contains('@') && email.contains('.') && email.len() > 5
 }
@@ -187,7 +187,7 @@ fn validate_age(age: u8) -> Result<(), &'static str> {
     }
 }
 
-////// 2.2.1 Data Validation ----
+// ### 2.2.1 Data Validation
 fn validate_username(username: &str) -> Result<(), &'static str> {
     if username.len() < 3 {
         return Err("Username must be at least 3 characters");
@@ -206,7 +206,7 @@ fn validate_phone_number(phone: &str) -> bool {
     digits.len() == 10 || digits.len() == 11
 }
 
-// 3. Main Function ----
+// # 3. Main Function
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Starting Rust Application {}", API_VERSION);
     

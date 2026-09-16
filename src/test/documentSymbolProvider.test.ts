@@ -1,6 +1,6 @@
 import * as assert from 'assert';
 import * as vscode from 'vscode';
-import { CodeOrganizerDocumentSymbolProvider } from '../documentSymbolProvider';
+import { MarkdownCommentOutlineDocumentSymbolProvider } from '../documentSymbolProvider';
 import { SectionIndex } from '../sectionIndex';
 
 // Unlike the syntax suites, this one imports `vscode` — it exercises the provider
@@ -12,11 +12,11 @@ suite('Document Symbol Provider Tests', () => {
 	// instance would leak it — and every document these tests open — for the rest
 	// of the run.
 	let index: SectionIndex;
-	let provider: CodeOrganizerDocumentSymbolProvider;
+	let provider: MarkdownCommentOutlineDocumentSymbolProvider;
 
 	setup(() => {
 		index = new SectionIndex();
-		provider = new CodeOrganizerDocumentSymbolProvider(index);
+		provider = new MarkdownCommentOutlineDocumentSymbolProvider(index);
 	});
 
 	teardown(() => {
@@ -31,7 +31,7 @@ suite('Document Symbol Provider Tests', () => {
 
 	test('Should nest sections under their parent', async () => {
 		const symbols = await symbolsFor(
-			'# Root ----\n## Child A ----\n## Child B ----\n'
+			'# # Root\n# ## Child A\n# ## Child B\n'
 		);
 
 		assert.strictEqual(symbols.length, 1);
@@ -48,7 +48,7 @@ suite('Document Symbol Provider Tests', () => {
 		// and the push, so the entire subtree under that child vanished from the
 		// built-in Outline while the Activity Bar TreeView still showed it.
 		const symbols = await symbolsFor(
-			'# Setup ----\n## Setup ----\n### Details ----\n#### Deep ----\n'
+			'# # Setup\n# ## Setup\n# ### Details\n# #### Deep\n'
 		);
 
 		assert.strictEqual(symbols.length, 1);
@@ -70,7 +70,7 @@ suite('Document Symbol Provider Tests', () => {
 	test('Should keep repeated names at every level of one chain', async () => {
 		// Same name all the way down — nothing may collapse or drop.
 		const symbols = await symbolsFor(
-			'# Config ----\n## Config ----\n### Config ----\n#### Config ----\n'
+			'# # Config\n# ## Config\n# ### Config\n# #### Config\n'
 		);
 
 		let node = symbols[0];
@@ -87,7 +87,7 @@ suite('Document Symbol Provider Tests', () => {
 
 	test('Should treat every depth-1 section as a root', async () => {
 		const symbols = await symbolsFor(
-			'# First ----\n## Nested ----\n# Second ----\n'
+			'# # First\n# ## Nested\n# # Second\n'
 		);
 
 		assert.deepStrictEqual(symbols.map(s => s.name), ['First', 'Second']);
@@ -99,4 +99,11 @@ suite('Document Symbol Provider Tests', () => {
 		const symbols = await symbolsFor('x = 1\n# just a comment\n');
 		assert.deepStrictEqual(symbols, []);
 	});
+  test('Parentless deeper headings and six-level descendants stay visible', async () => {
+    const symbols = await symbolsFor('# ### Orphan\n# ###### Deep\n# ## Next');
+    assert.deepStrictEqual(symbols.map(s => s.name), ['Orphan', 'Next']);
+    assert.strictEqual(symbols[0].children[0].name, 'Deep');
+    assert.strictEqual(symbols[0].children[0].selectionRange.start.line, 1);
+  });
+
 });

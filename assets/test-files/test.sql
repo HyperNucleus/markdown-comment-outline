@@ -1,4 +1,4 @@
--- 1. Database Setup ----
+-- # 1. Database Setup
 CREATE DATABASE myapp;
 USE myapp;
 -- code
@@ -22,9 +22,9 @@ USE myapp;
 -- code
 -- code
 
----- 1.1 Tables ----
+-- ## 1.1 Tables
 
------- 1.1.1 Users ----
+-- ### 1.1.1 Users
 
 CREATE TABLE users (
     id INT PRIMARY KEY,
@@ -64,7 +64,7 @@ CREATE TABLE users (
 -- code
 
 
------- 1.1.1 Orders ----
+-- ### 1.1.1 Orders
 
 CREATE TABLE orders (
     id INT PRIMARY KEY,
@@ -92,7 +92,7 @@ CREATE TABLE orders (
 -- code
 
 
----- 1.1 Row Level Security ----
+-- ## 1.1 Row Level Security
 -- code
 -- code
 -- code
@@ -124,7 +124,7 @@ CREATE TABLE orders (
 -- code
 -- code
 
--- 2. Queries ----
+-- # 2. Queries
 SELECT * FROM users;
 -- code
 -- code
@@ -147,7 +147,7 @@ SELECT * FROM users;
 -- code
 -- code
 
----- 2.1 Joins ----
+-- ## 2.1 Joins
 SELECT u.name, o.id 
 FROM users u 
 JOIN orders o ON u.id = o.user_id;

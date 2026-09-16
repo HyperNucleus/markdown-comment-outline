@@ -1,4 +1,4 @@
-// 1. C++ Class Definition ----
+// # 1. C++ Class Definition
 #include <iostream>
 #include <string>
 std::cout << "filler" << std::endl;
@@ -22,7 +22,7 @@ std::cout << "filler" << std::endl;
 std::cout << "filler" << std::endl;
 std::cout << "filler" << std::endl;
 
-//// 1.1 Constructor ----
+// ## 1.1 Constructor
 class Calculator {
 private:
     std::string name;
@@ -49,7 +49,7 @@ public:
     std::cout << "filler" << std::endl;
     std::cout << "filler" << std::endl;
     
-    //// 1.2 Operations ----
+    // ## 1.2 Operations
     int add(int a, int b) {
         return a + b;
     }
@@ -79,7 +79,7 @@ std::cout << "filler" << std::endl;
 std::cout << "filler" << std::endl;
 std::cout << "filler" << std::endl;
 
-// 2. Template Functions ----
+// # 2. Template Functions
 template<typename T>
 T maximum(T a, T b) {
     return (a > b) ? a : b;
@@ -105,11 +105,11 @@ std::cout << "filler" << std::endl;
 std::cout << "filler" << std::endl;
 std::cout << "filler" << std::endl;
 
-//// 2.1 Main Function ----
+// ## 2.1 Main Function
 int main() {
     Calculator calc("MyCalculator");
     
-    //// 2.2 Usage Examples ----
+    // ## 2.2 Usage Examples
     int sum = calc.add(5, 3);
     int diff = calc.subtract(10, 4);
     
